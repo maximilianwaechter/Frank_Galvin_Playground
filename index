@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PPR Program Sites Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #map { width: 800px; height: 600px; }
+  </style>
+</head>
+
+<body>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- GeoJSON wrapped as: var parksPrograms = { ... } -->
+  <script src="PPR_Program_Sites.js"></script>
+
+  <script>
+    var map = L.map('map').setView([39.9526, -75.1652], 12);
+    // Leaflet docs: Map creation and setView https://leafletjs.com/reference.html#map [web:2]
+
+    var basemap = L.tileLayer(
+      'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+      {
+        maxZoom: 19,
+        id: 'mapbox/light-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'pk.eyJ1IjoidHVqOTc4OTMiLCJhIjoiY21scGo0dmJwMDRoNjNob3I1MzY5c2U5diJ9.ytQylqm3thRGx1tkAEcbGg'
+      }
+    ).addTo(map);
+    // Leaflet docs: Tile layers https://leafletjs.com/reference.html#tilelayer [web:2]
+
+    // 1) ALL parks as green circle markers
+    var allSitesLayer = L.geoJSON(parksPrograms, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius: 6,
+          color: 'green',
+          fillColor: 'green',
+          fillOpacity: 0.8
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        var name = feature.properties.park_name || 'No name';
+        layer.bindPopup(name);
+      }
+    }).addTo(map);
+    // Leaflet docs: L.geoJSON with pointToLayer / onEachFeature https://leafletjs.com/examples/geojson/ [web:2]
+
+    // 2) Filtered layer: ONLY "Frank Glavin Playground"
+    var frankGlavinLayer = L.geoJSON(parksPrograms, {
+      filter: function (feature) {
+        return feature.properties.park_name === 'Frank Glavin Playground';
+      },
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius: 8,
+          color: 'green',
+          fillColor: 'green',
+          fillOpacity: 1
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        layer.bindPopup('Frank Glavin Playground');
+      }
+    });
+    // Leaflet docs: filter option in L.geoJSON https://leafletjs.com/reference.html#geojson-option [web:2]
+
+    // ===== TOGGLE FOR YOUR TWO SCREENSHOTS =====
+    // For screenshot 1 (ALL parks): leave this line ON and keep the two below commented:
+    allSitesLayer.addTo(map);
+
+    // For screenshot 2 (ONLY Frank Glavin Playground):
+    // 1) Comment out the line above (allSitesLayer.addTo(map);)
+    // 2) Uncomment the two lines below:
+
+    map.removeLayer(allSitesLayer);
+    frankGlavinLayer.addTo(map);
+
+    // ===== Example commented lines with doc refs (assignment requirement) =====
+
+    // L.map('map').setView([39.9526, -75.1652], 12);
+    // Leaflet docs: Map creation and setView https://leafletjs.com/reference.html#map [web:2]
+
+    // var basemap = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {...});
+    // Leaflet docs: Tile layers https://leafletjs.com/reference.html#tilelayer [web:2]
+
+    // var allSitesLayer = L.geoJSON(parksPrograms, {...});
+    // Leaflet docs: L.geoJSON and options https://leafletjs.com/reference.html#geojson [web:2]
+  </script>
+
+</body>
+</html>
